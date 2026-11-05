@@ -1,0 +1,26 @@
+PassengerId,Pclass,Name,Sex,Age,SibSp,Parch,Ticket,Fare,Cabin,Embarked
+566,3,"Davies, Mr. Alfred J",male,24.0,2,0,A/4 48871,24.15,,S
+161,3,"Cribb, Mr. John Hatfield",male,44.0,0,1,371362,16.1,,S
+554,3,"Leeni, Mr. Fahim (""Philip Zenni"")",male,22.0,0,0,2620,7.225,,C
+861,3,"Hansen, Mr. Claus Peter",male,41.0,2,0,350026,14.1083,,S
+242,3,"Murphy, Miss. Katherine ""Kate""",female,,1,0,367230,15.5,,Q
+560,3,"de Messemaeker, Mrs. Guillaume Joseph (Emma)",female,36.0,1,0,345572,17.4,,S
+388,2,"Buss, Miss. Kate",female,36.0,0,0,27849,13.0,,S
+537,1,"Butt, Major. Archibald Willingham",male,45.0,0,0,113050,26.55,B38,S
+699,1,"Thayer, Mr. John Borland",male,49.0,1,1,17421,110.8833,C68,C
+100,2,"Kantor, Mr. Sinai",male,34.0,1,0,244367,26.0,,S
+127,3,"McMahon, Mr. Martin",male,,0,0,370372,7.75,,Q
+334,3,"Vander Planke, Mr. Leo Edmondus",male,16.0,2,0,345764,18.0,,S
+217,3,"Honkanen, Miss. Eliina",female,27.0,0,0,STON/O2. 3101283,7.925,,S
+818,2,"Mallet, Mr. Albert",male,31.0,1,1,S.C./PARIS 2079,37.0042,,C
+28,1,"Fortune, Mr. Charles Alexander",male,19.0,3,2,19950,263.0,C23 C25 C27,S
+704,3,"Gallagher, Mr. Martin",male,25.0,0,0,36864,7.7417,,Q
+486,3,"Lefebre, Miss. Jeannie",female,,3,1,4133,25.4667,,S
+512,3,"Webber, Mr. James",male,,0,0,SOTON/OQ 3101316,8.05,,S
+434,3,"Kallio, Mr. Nikolai Erland",male,17.0,0,0,STON/O 2. 3101274,7.125,,S
+577,2,"Garside, Miss. Ethel",female,34.0,0,0,243880,13.0,,S
+88,3,"Slocovski, Mr. Selman Francis",male,,0,0,SOTON/OQ 392086,8.05,,S
+581,2,"Christy, Miss. Julie Rachel",female,25.0,1,1,237789,30.0,,S
+158,3,"Corn, Mr. Harry",male,30.0,0,0,SOTON/OQ 392090,8.05,,S
+280,3,"Abbott, Mrs. Stanton (Rosa Hunt)",female,35.0,1,1,C.A. 2673,20.25,,S
+423,3,"Zimmerman, Mr. Leo",male,29.0,0,0,315082,7.875,,S

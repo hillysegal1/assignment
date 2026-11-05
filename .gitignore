@@ -1,0 +1,18 @@
+# Kaggle credentials: never commit
+kaggle.json
+access_token
+.env
+
+# Downloaded raw data (fetched from Kaggle by the code)
+data/raw/
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+.venv/
+
+# OS files
+.DS_Store
+Thumbs.db
