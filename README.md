@@ -74,9 +74,9 @@ Try `data/sample_unlabeled.csv` to see predictions without metrics. Wrong paths 
 ## Architecture and design choices
 
 ```
-train.py            training script: load → split → cross-validate → train → save
+train.py            training script: data split, training loop, cross-validation, final fit, saving
 ds_app.py           Streamlit app
-src/titanic/        shared code: data.py, preprocessing.py, model.py, training.py, checkpoint.py, evaluate.py
+src/titanic/        code shared by train.py and the app: data.py, preprocessing.py, model.py, checkpoint.py, evaluate.py
 notebooks/eda.ipynb exploratory data analysis
 artifacts/          trained model and validation split
 data/               small sample CSVs (full data: Kaggle)
