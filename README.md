@@ -71,6 +71,12 @@ jupyter notebook notebooks/eda.ipynb
 
 Try `data/sample_unlabeled.csv` to see predictions without metrics. Wrong paths or missing columns show a clear message.
 
+![Metrics tab](docs/screenshots/metrics.png)
+
+![Plots tab](docs/screenshots/plots.png)
+
+![Features tab](docs/screenshots/features.png)
+
 ## Architecture and design choices
 
 ```
@@ -83,15 +89,53 @@ data/               small sample CSVs (full data: Kaggle)
 tests/              pytest checks
 ```
 
-- **No leakage.** The EDA's survival analysis and all preprocessing statistics use the training split only. The validation split is scored once, at the end.
-- **Preprocessing from the EDA:**
-  - Title extracted from Name; rare titles mapped to Mr or Mrs by sex.
-  - Missing ages filled with the median per title, with Miss split by whether the passenger travels with parents or children.
-  - Zero fares treated as missing, then log-transformed.
-  - Cabin reduced to a "recorded" flag.
-  - One-hot class, port and title; standardised numbers.
-  - The fitted values are saved inside the checkpoint, so the app transforms data exactly as training did.
-- **Model:** an MLP, 17 → 32 → 16 → 1, with ReLU, dropout 0.2, AdamW and `BCEWithLogitsLoss`. Network sizes from 8 to 128 units, and a logistic regression, all scored within noise of each other in cross-validation; the data, not the architecture, limits accuracy.
-- **Training:** 5-fold cross-validation picks the number of epochs (42) by held-out log loss, then one model is trained on all training rows. Runs are fully reproducible.
-- **Safe checkpoint:** it loads with `torch.load(weights_only=True)`.
-- **Evaluation:** metrics beyond accuracy, baselines, calibration and permutation importance. The model is weakest on 3rd-class women and 1st-class men, whose survival was close to a coin toss.
+### Data flow
+
+1. `train.py` downloads `train.csv` from Kaggle (token read from `.env`) and checks its columns and values.
+2. It splits the 891 passengers once: 712 for training, 179 held out for validation (stratified, seed 42).
+3. It runs cross-validation on the 712 training passengers to choose how long to train (below).
+4. It fits the preprocessing and trains the final model on all 712, then saves the model, the fitted preprocessing and the validation passengers to `artifacts/`.
+5. The app loads `artifacts/model.pt`, applies the saved preprocessing to whatever CSV it is given, and shows the results.
+
+The validation passengers are never used for a decision: not in the EDA's survival analysis, not for the preprocessing statistics, not for choosing the model. They are scored once, at the end.
+
+### Preprocessing
+
+Every choice comes from the EDA:
+- **Title:** extracted from Name. Mr, Mrs, Miss and Master are kept, and rare titles become Mr or Mrs by sex.
+- **Age:** missing ages are filled with the median for the title, with Miss split by whether the passenger travels with parents or children (median age 8 vs 26).
+- **Fare:** a fare of 0 is treated as missing, filled with the median for the class, then log-transformed.
+- **Cabin:** reduced to a "recorded" flag.
+- **Encoding:** class, port and title are one-hot encoded; the numeric columns are standardised.
+
+The preprocessing has a `fit` step, run on training rows only, which learns the medians and scaling values. Its `transform` step applies those stored values to any data. The fitted values are saved inside the checkpoint, so the app transforms data exactly as training did.
+
+### Model
+
+A small fully connected network (MLP), 17 inputs → 32 → 16 → 1 output, with ReLU, dropout 0.2, AdamW (learning rate 0.001, weight decay 0.001), batches of 32, and `BCEWithLogitsLoss`.
+
+It's kept small because there are only 712 training rows; it has 1,121 weights. The hidden layers let it learn interactions such as "class matters differently for men and women", which a linear model can't. I compared networks from 8 to 128 hidden units, and a logistic regression, with cross-validation. All the networks with a hidden layer scored within noise of each other, so the data, not the architecture, limits accuracy.
+
+### Cross-validation: how long to train
+
+A neural network improves for a while and then starts memorising the training passengers (overfitting), so the number of epochs has to be chosen. That choice can't use the validation split, or it would no longer be unseen. So it's made with 5-fold cross-validation on the 712 training passengers:
+
+1. Split the training passengers into 5 stratified folds of about 142.
+2. Train 5 times. Each time, one fold is held out, and the preprocessing is fitted and the model trained on the other four. After every epoch (up to 200), score the held-out fold.
+3. Average the five held-out curves and pick the epoch with the lowest loss: **42**. Held-out loss stops improving around epoch 25 and rises after about 100, which is the overfitting this avoids.
+4. Train the final model on all 712 passengers for 42 epochs.
+
+Two details matter. The preprocessing is refitted inside every fold, so a held-out fold never contributes to its own filling values. And the choice uses log loss rather than accuracy, because log loss changes smoothly while accuracy jumps with every passenger crossing the threshold.
+
+Cross-validation also gives an honest estimate before the validation split is touched: 83.4% ± 2.5% accuracy across folds. The validation score (83.2%) falls right inside that range.
+
+### Reproducibility and robustness
+
+- **Fixed seeds and deterministic PyTorch:** rerunning `train.py` produces identical weights.
+- **Safe checkpoint:** it holds only tensors, numbers and strings, and loads with `torch.load(weights_only=True)`.
+- **Clear errors:** bad paths, missing columns or a missing token produce a readable message, not a crash.
+- **Tests:** `pytest` checks the preprocessing, the checkpoint and the app.
+
+### Evaluation
+
+The app reports metrics beyond accuracy (precision, recall, F1, ROC AUC, log loss), compares the model with simple baselines, and shows calibration, results per group and permutation feature importance. The model beats "women survive" (77.7%) mainly by getting boys and 3rd-class women right. It's weakest on 3rd-class women and 1st-class men, whose survival was close to a coin toss.
